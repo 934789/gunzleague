@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - GunZ League</title>
+    <link rel="icon" type="image/png" href="~/img/gunz-league-logo1.png" asp-append-version="true" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/GunZLeague.styles.css" asp-append-version="true" />
+</head>
+<body>
+@{
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
+    var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
+    var homeActive = currentController == "Home" && currentAction == "Index";
+    var rankingActive = currentController == "Ranking";
+    var downloadActive = currentController == "Home" && currentAction == "Download";
+    var donateActive = currentController == "Home" && currentAction == "Donate";
+}
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark site-navbar border-bottom mb-3">
+            <div class="container-fluid">
+                <a class="navbar-brand fw-bold site-brand" asp-area="" asp-controller="Home" asp-action="Index" aria-label="GunZ League">
+                    <img class="site-brand-logo" src="~/img/gunz-league-logo1.png" asp-append-version="true" alt="" aria-hidden="true" />
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Open navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    <ul class="navbar-nav flex-grow-1">
+                        <li class="nav-item">
+                            <a class="nav-link @(homeActive ? "active" : null)" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(rankingActive ? "active" : null)" asp-area="" asp-controller="Ranking" asp-action="Index">Ranking</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(downloadActive ? "active" : null)" asp-area="" asp-controller="Home" asp-action="Download">Download</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(donateActive ? "active" : null)" asp-area="" asp-controller="Home" asp-action="Donate">Donate</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <div class="container">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="border-top footer text-muted">
+        <div class="container footer-disclaimer">
+            <span>All rights reserved trademarks belong to their respective owners.</span>
+            <span>GunZ is a trademark registered by MAIET Entertainment and MASANGSOFT.</span>
+            <span>This is a completely free GunZ server; donations, when available, are used to cover server expenses.</span>
+        </div>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

@@ -1,0 +1,93 @@
+@model GunZLeague.Models.ViewModels.PlayerDetailsViewModel
+@using System.Globalization
+@{
+    ViewData["Title"] = $"{Model.Player.Name} player";
+    var player = Model.Player;
+    var account = Model.Account;
+    var clan = Model.Clan;
+    var culture = CultureInfo.GetCultureInfo("pt-BR");
+    var kills = player.KillCount ?? 0;
+    var deaths = player.DeathCount ?? 0;
+    var totalFights = kills + deaths;
+    var killPercent = totalFights > 0 ? (int)Math.Round((kills / (double)totalFights) * 100) : 0;
+    var playTime = TimeSpan.FromSeconds(player.PlayTime ?? 0);
+    var playTimeText = playTime.TotalDays >= 1
+        ? $"{(int)playTime.TotalDays} days, {playTime.Hours} hours"
+        : $"{playTime.Hours} hours, {playTime.Minutes} minutes";
+    var createdAt = player.RegDate ?? account?.RegDate;
+    var lastLoginAt = Model.LastLoginAt ?? player.LastTime;
+}
+
+<section class="page-shell">
+    <div class="page-main">
+        <section class="rank-simple-header clan-detail-hero player-detail-hero">
+            <div class="tabs rank-tabs">
+                <a asp-action="Player">Back to players</a>
+                <a asp-action="Clan">Clan</a>
+                <a asp-action="PlayerWars">Player Wars</a>
+            </div>
+        </section>
+
+        <section class="site-card player-profile-sheet">
+            <div class="player-sheet-header">
+                <div>
+                    <span class="account-card-kicker">Character details</span>
+                </div>
+            </div>
+
+            <div class="player-profile-metrics">
+                <div>
+                    <small>Level</small>
+                    <strong>@(player.Level?.ToString("N0", culture) ?? "-")</strong>
+                </div>
+                <div>
+                    <small>K/D</small>
+                    <strong>@killPercent%</strong>
+                </div>
+                <div>
+                    <small>Play time</small>
+                    <strong>@playTimeText</strong>
+                </div>
+            </div>
+
+            <dl>
+                <dt>Name:</dt>
+                <dd>@player.Name</dd>
+
+                <dt>Level:</dt>
+                <dd>@(player.Level?.ToString("N0", culture) ?? "-")</dd>
+
+                <dt>Exp:</dt>
+                <dd>@((player.XP ?? 0).ToString("N0", culture))</dd>
+
+                <dt>Kills/Deaths:</dt>
+                <dd>@kills.ToString("N0", culture)/@deaths.ToString("N0", culture) (@killPercent%)</dd>
+
+                <dt>Gender:</dt>
+                <dd>@(player.Sex == 0 ? "Male" : player.Sex == 1 ? "Female" : "-")</dd>
+
+                <dt>Clan:</dt>
+                <dd>
+                    @if (clan != null)
+                    {
+                        <a class="table-entity-link" asp-action="ClanDetails" asp-route-id="@clan.CLID">@clan.Name</a>
+                    }
+                    else
+                    {
+                        <span>-</span>
+                    }
+                </dd>
+
+                <dt>Created:</dt>
+                <dd>@(createdAt?.ToString("MMM dd yyyy hh:mm:ss tt", CultureInfo.InvariantCulture) ?? "-")</dd>
+
+                <dt>Last login:</dt>
+                <dd>@(lastLoginAt?.ToString("MMM dd yyyy hh:mm:ss tt", CultureInfo.InvariantCulture) ?? "-")</dd>
+
+                <dt>Play time:</dt>
+                <dd>@playTimeText</dd>
+            </dl>
+        </section>
+    </div>
+    <partial name="_SidePanel" />
+</section>

@@ -1,0 +1,140 @@
+@model GunZLeague.Models.ViewModels.ClanDetailsViewModel
+@{
+    ViewData["Title"] = $"{Model.Clan.Name} clan";
+    var clan = Model.Clan;
+    var hasSafeHomepage = Uri.TryCreate(clan.Homepage, UriKind.Absolute, out var homepageUri)
+        && (homepageUri.Scheme == Uri.UriSchemeHttp || homepageUri.Scheme == Uri.UriSchemeHttps);
+}
+
+<section class="page-shell">
+    <div class="page-main">
+        <section class="rank-simple-header clan-detail-hero">
+            <div class="clan-detail-heading">
+                <span class="clan-detail-emblem" aria-hidden="true">
+                    @if (!string.IsNullOrWhiteSpace(clan.EmblemUrl))
+                    {
+                        <img src="/gunzweb/clan_emblem/@($"{clan.EmblemUrl}?v={clan.EmblemChecksum ?? 0}")" alt="" onerror="this.style.display='none';" />
+                    }
+                    else
+                    {
+                        <img src="/img/no_emblem.png" alt="No Emblem" />
+                    }
+                </span>
+                <div>
+                    <span class="eyebrow">Clan profile</span>
+                    <h1>@clan.Name</h1>
+                    <p>
+                        Master: <strong>@Model.MasterName</strong>
+                        @if (clan.RegDate.HasValue)
+                        {
+                            <span>Created @clan.RegDate.Value.ToString("MMM dd, yyyy")</span>
+                        }
+                    </p>
+                </div>
+            </div>
+            <div class="tabs rank-tabs">
+                <a asp-action="Clan">Back to clans</a>
+                <a asp-action="Player">Player</a>
+                <a asp-action="PlayerWars">Player Wars</a>
+            </div>
+        </section>
+
+        <section class="clan-detail-grid">
+            <div class="site-card clan-profile-card">
+                <span class="account-card-kicker">Overview</span>
+                <div class="clan-stat-grid">
+                    <div>
+                        <small>Members</small>
+                        <strong>@Model.MemberCount</strong>
+                    </div>
+                    <div>
+                        <small>Points</small>
+                        <strong>@(clan.Point ?? 0)</strong>
+                    </div>
+                    <div>
+                        <small>Total points</small>
+                        <strong>@(clan.TotalPoint ?? 0)</strong>
+                    </div>
+                    <div>
+                        <small>Wins</small>
+                        <strong>@(clan.WinCount ?? 0)</strong>
+                    </div>
+                    <div>
+                        <small>Losses</small>
+                        <strong>@(clan.LoseCount ?? 0)</strong>
+                    </div>
+                    <div>
+                        <small>Draws</small>
+                        <strong>@(clan.Draws ?? 0)</strong>
+                    </div>
+                    <div>
+                        <small>Ranking</small>
+                        <strong>@(clan.Ranking?.ToString() ?? "-")</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="site-card clan-profile-card">
+                <span class="account-card-kicker">Information</span>
+                @if (!string.IsNullOrWhiteSpace(clan.Introduction))
+                {
+                    <p class="clan-intro">@clan.Introduction</p>
+                }
+                else
+                {
+                    <p class="clan-intro muted-text">No clan introduction available.</p>
+                }
+
+                @if (hasSafeHomepage)
+                {
+                    <a class="clan-meta-link" href="@homepageUri" target="_blank" rel="noopener noreferrer">Clan homepage</a>
+                }
+            </div>
+        </section>
+
+        <div class="section-title">
+            <h2>Members</h2>
+            <span class="muted-text">@Model.MemberCount total</span>
+        </div>
+
+        <div class="table-shell rank-table-shell">
+            <table class="table rank-table align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Player</th>
+                        <th>Grade</th>
+                        <th>Level</th>
+                        <th>Contribution</th>
+                        <th>Joined</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var member in Model.Members)
+                    {
+                        <tr>
+                            <td>
+                                <a class="table-entity-link" asp-action="PlayerDetails" asp-route-id="@member.CID">
+                                    @member.Name
+                                </a>
+                                @if (member.IsMaster)
+                                {
+                                    <span class="clan-master-badge">Leader</span>
+                                }
+                            </td>
+                            <td>@member.GradeName</td>
+                            <td>@(member.Level?.ToString() ?? "-")</td>
+                            <td>@(member.ContributionPoints?.ToString() ?? "0")</td>
+                            <td>@(member.JoinedAt?.ToString("MMM dd, yyyy") ?? "-")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        @if (!Model.Members.Any())
+        {
+            <div class="empty-state mt-3">No members found for this clan.</div>
+        }
+    </div>
+    <partial name="_SidePanel" />
+</section>

@@ -1,0 +1,29 @@
+@{
+    ViewData["Title"] = "Login";
+}
+
+<div class="auth-page">
+    <form class="auth-card" asp-action="Login" method="post">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="returnUrl" value="@ViewBag.ReturnUrl" />
+
+        <h1>Login</h1>
+
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+        }
+
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+        <label class="form-label" for="userId">Username</label>
+        <input class="form-control" id="userId" name="userId" maxlength="20" autocomplete="username" required />
+
+        <label class="form-label mt-3" for="password">Password</label>
+        <input class="form-control" id="password" name="password" type="password" maxlength="20" autocomplete="current-password" required />
+
+        <button class="btn btn-danger w-100 mt-4" type="submit">Log in</button>
+        <a class="auth-link" asp-action="ForgotPassword">Forgot password?</a>
+        <a class="auth-link" asp-action="Register">Create an account</a>
+    </form>
+</div>

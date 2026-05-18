@@ -1,0 +1,30 @@
+@{
+    ViewData["Title"] = "Create account";
+}
+
+<section class="page-shell">
+    <div class="page-main">
+        <form class="auth-card auth-card-wide" asp-action="Register" method="post">
+            @Html.AntiForgeryToken()
+
+            <h1>Create account</h1>
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            <label class="form-label" for="userId">Username</label>
+            <input class="form-control" id="userId" name="userId" minlength="4" maxlength="20" autocomplete="username" required />
+
+            <label class="form-label mt-3" for="email">Email</label>
+            <input class="form-control" id="email" name="email" type="email" maxlength="50" autocomplete="email" />
+
+            <label class="form-label mt-3" for="password">Password</label>
+            <input class="form-control" id="password" name="password" type="password" minlength="4" maxlength="20" autocomplete="new-password" required />
+
+            <label class="form-label mt-3" for="confirmPassword">Confirm password</label>
+            <input class="form-control" id="confirmPassword" name="confirmPassword" type="password" minlength="4" maxlength="20" autocomplete="new-password" required />
+
+            <button class="btn btn-danger w-100 mt-4" type="submit">Create account</button>
+            <a class="auth-link" asp-action="Login">I already have an account</a>
+        </form>
+    </div>
+    <partial name="_SidePanel" />
+</section>

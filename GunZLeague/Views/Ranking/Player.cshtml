@@ -1,0 +1,95 @@
+@model IEnumerable<GunZLeague.Models.GunZ.Character>
+@{
+    ViewData["Title"] = "Character ranking";
+    var sort = (string)ViewBag.CurrentSort;
+    var search = ViewBag.Search as string ?? string.Empty;
+    var currentPage = (int)ViewBag.CurrentPage;
+    var totalPages = (int)ViewBag.TotalPages;
+}
+
+<section class="page-shell">
+    <div class="page-main">
+        <section class="rank-simple-header">
+            <span class="eyebrow">Ranking</span>
+            <h1>Character ranking</h1>
+            <div class="tabs rank-tabs">
+                <a asp-action="Index">Rank</a>
+                <a class="active" asp-action="Player">Player</a>
+                <a asp-action="Clan">Clan</a>
+                <a asp-action="PlayerWars">Player Wars</a>
+            </div>
+        </section>
+
+        <div class="rank-toolbar rank-search-toolbar">
+            <form class="rank-search-form" asp-action="Player" method="get">
+                <input type="hidden" name="sort" value="@sort" />
+                <input class="form-control" type="search" name="q" value="@search" maxlength="24" placeholder="Search character" />
+                <button class="btn btn-danger" type="submit">Search</button>
+                @if (!string.IsNullOrWhiteSpace(search))
+                {
+                    <a class="btn btn-outline-light" asp-action="Player" asp-route-sort="@sort">Clear</a>
+                }
+            </form>
+            <div class="tabs">
+                <a class="@(sort == "level" ? "active" : "")" asp-action="Player" asp-route-sort="level" asp-route-q="@search">Level</a>
+                <a class="@(sort == "kills" ? "active" : "")" asp-action="Player" asp-route-sort="kills" asp-route-q="@search">Kills</a>
+                <a class="@(sort == "score" ? "active" : "")" asp-action="Player" asp-route-sort="score" asp-route-q="@search">XP</a>
+            </div>
+        </div>
+
+        <div class="table-shell rank-table-shell">
+            <table class="table rank-table align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Character</th>
+                        <th>Level</th>
+                        <th>Kills</th>
+                        <th>Deaths</th>
+                        <th>XP</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+                        var position = ((currentPage - 1) * 10) + 1;
+                    }
+                    @foreach (var player in Model)
+                    {
+                        var rankClass = position <= 3 ? $"rank-top-{position}" : string.Empty;
+                        <tr>
+                            <td><span class="rank-number @rankClass">@position</span></td>
+                            <td>
+                                <a class="table-entity-link" asp-action="PlayerDetails" asp-route-id="@player.CID">
+                                    @player.Name
+                                </a>
+                            </td>
+                            <td>@player.Level</td>
+                            <td>@player.KillCount</td>
+                            <td>@player.DeathCount</td>
+                            <td>@player.XP</td>
+                        </tr>
+                        position++;
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        @if (!Model.Any())
+        {
+            <div class="empty-state mt-3">No characters found.</div>
+        }
+
+        <div class="pager-row">
+            @if (currentPage > 1)
+            {
+                <a class="btn btn-outline-light" asp-action="Player" asp-route-sort="@sort" asp-route-q="@search" asp-route-page="@(currentPage - 1)">Previous</a>
+            }
+            <span>Page @currentPage of @(Math.Max(totalPages, 1))</span>
+            @if (currentPage < totalPages)
+            {
+                <a class="btn btn-outline-light" asp-action="Player" asp-route-sort="@sort" asp-route-q="@search" asp-route-page="@(currentPage + 1)">Next</a>
+            }
+        </div>
+    </div>
+    <partial name="_SidePanel" />
+</section>

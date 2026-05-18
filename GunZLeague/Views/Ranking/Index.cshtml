@@ -1,0 +1,29 @@
+@{
+    ViewData["Title"] = "Ranking";
+}
+
+<section class="page-shell">
+    <div class="page-main">
+        <section class="rank-simple-header">
+            <span class="eyebrow">GunZ League</span>
+            <h1>Ranking</h1>
+            <p>Choose a ranking board to inspect.</p>
+        </section>
+
+        <section class="ranking-menu ranking-menu-enhanced" aria-label="Ranking categories">
+            <a class="ranking-option" asp-action="Player">
+                <span>Player</span>
+                <small>Characters sorted by level, kills, or XP.</small>
+            </a>
+            <a class="ranking-option" asp-action="Clan">
+                <span>Clan</span>
+                <small>Clan points, wins, and losses in one board.</small>
+            </a>
+            <a class="ranking-option" asp-action="PlayerWars">
+                <span>Player Wars</span>
+                <small>Competitive war points from recent logs.</small>
+            </a>
+        </section>
+    </div>
+    <partial name="_SidePanel" />
+</section>

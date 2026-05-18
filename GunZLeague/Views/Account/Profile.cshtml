@@ -1,0 +1,214 @@
+@model GunZLeague.Models.ViewModels.AccountProfileViewModel
+@using Microsoft.AspNetCore.Http
+@{
+    ViewData["Title"] = "My account";
+    var userName = Context.Session.GetString("UserName");
+}
+
+<div class="section-title">
+    <div>
+        <h1>My account</h1>
+        <p class="muted-text">@userName</p>
+    </div>
+    <form asp-action="Logout" method="post">
+        @Html.AntiForgeryToken()
+        <button class="btn btn-outline-light" type="submit">Log out</button>
+    </form>
+</div>
+
+<section class="account-page-grid">
+    <div>
+        @if (TempData["ClanPanelSuccess"] != null)
+        {
+            <div class="alert alert-success">@TempData["ClanPanelSuccess"]</div>
+        }
+
+        @if (TempData["ClanPanelError"] != null)
+        {
+            <div class="alert alert-danger">@TempData["ClanPanelError"]</div>
+        }
+
+        <div class="table-shell">
+            <table class="table table-dark table-striped align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Character</th>
+                        <th>Level</th>
+                        <th>Kills</th>
+                        <th>Deaths</th>
+                        <th>XP</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var character in Model.Characters)
+                    {
+                        <tr>
+                            <td>@character.Name</td>
+                            <td>@character.Level</td>
+                            <td>@character.KillCount</td>
+                            <td>@character.DeathCount</td>
+                            <td>@character.XP</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        @if (!Model.Characters.Any())
+        {
+            <div class="empty-state mt-3">No characters found on this account.</div>
+        }
+
+        <section class="profile-clan-panel">
+            <div class="section-title">
+                <h2>My clans</h2>
+            </div>
+
+            @if (Model.Clans.Any())
+            {
+                <article class="site-card account-clan-card">
+                    <form class="account-clan-picker" asp-action="Profile" method="get" data-clan-picker-form>
+                        <label class="form-label" for="clanId">Clan</label>
+                        <div>
+                            <select class="form-control" id="clanId" name="clanId" data-clan-picker>
+                                @foreach (var clanOption in Model.Clans)
+                                {
+                                    if (Model.SelectedClanId == clanOption.CLID)
+                                    {
+                                        <option value="@clanOption.CLID" selected>@clanOption.ClanName - @clanOption.ActorCharacterName (@clanOption.ActorGradeName)</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@clanOption.CLID">@clanOption.ClanName - @clanOption.ActorCharacterName (@clanOption.ActorGradeName)</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                    </form>
+
+                    @if (Model.SelectedClan != null)
+                    {
+                        var clan = Model.SelectedClan;
+
+                    <div class="account-clan-header">
+                        <div>
+                            <span class="account-card-kicker">@clan.ActorGradeName</span>
+                            <h3>@clan.ClanName</h3>
+                            <p>Managing as @clan.ActorCharacterName</p>
+                        </div>
+                        <a class="btn btn-outline-light btn-sm" asp-controller="Ranking" asp-action="ClanDetails" asp-route-id="@clan.CLID">Open clan</a>
+                    </div>
+
+                        <div class="clan-emblem-panel">
+                            <div class="clan-emblem-preview">
+                                @if (!string.IsNullOrWhiteSpace(clan.EmblemUrl))
+                                {
+                                    <img src="/gunzweb/clan_emblem/@($"{clan.EmblemUrl}?v={clan.EmblemChecksum ?? 0}")" alt="@clan.ClanName emblem" onerror="this.onerror=null; this.src='/img/no_emblem.png';" />
+                                }
+                                else
+                                {
+                                    <img src="/img/no_emblem.png" alt="No emblem" />
+                                }
+                            </div>
+
+                            <div class="clan-emblem-content">
+                                <span class="account-card-kicker">Clan emblem</span>
+                                @if (clan.CanUpdateEmblem)
+                                {
+                                    var emblemInputId = $"clanEmblem_{clan.CLID}";
+            
+                                    <form class="clan-emblem-form" asp-action="UploadClanEmblem" method="post" enctype="multipart/form-data">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="clanId" value="@clan.CLID" />
+                                        <input id="@emblemInputId" type="file" name="emblem" accept="image/png" required data-file-picker hidden />
+                
+                                        <div class="clan-emblem-actions" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                                            <label class="btn btn-outline-light btn-sm clan-emblem-file-button" for="@emblemInputId" style="margin-bottom: 0;">Choose file</label>
+                                            <strong class="clan-emblem-selected" data-file-name>No file selected</strong>
+                                            <button class="btn btn-danger btn-sm" type="submit">Upload emblem</button>
+                    
+                                            @if (!string.IsNullOrWhiteSpace(clan.EmblemUrl))
+                                            {
+                                                <button type="submit" form="deleteEmblemForm_@clan.CLID" class="btn btn-outline-danger btn-sm">Delete emblem</button>
+                                            }
+                                        </div>
+                                    </form>
+
+                                    @if (!string.IsNullOrWhiteSpace(clan.EmblemUrl))
+                                    {
+                                        <form id="deleteEmblemForm_@clan.CLID" asp-action="DeleteClanEmblem" method="post" style="display:none;">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="clanId" value="@clan.CLID" />
+                                        </form>
+                                    }
+            
+                                    <small>PNG only, automatically resized to 256x256 pixels for high quality, up to 256 KB.</small>
+                                }
+                                else
+                                {
+                                    <p>Only the clan leader can update the emblem.</p>
+                                }
+                            </div>
+                        </div>
+
+                    <div class="table-shell clan-member-shell">
+                        <table class="table table-dark table-striped align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Member</th>
+                                    <th>Role</th>
+                                    <th>Level</th>
+                                    <th>Contribution</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var member in clan.Members)
+                                {
+                                    <tr>
+                                        <td>@member.Name</td>
+                                        <td>@member.GradeName</td>
+                                        <td>@(member.Level?.ToString() ?? "-")</td>
+                                        <td>@(member.ContributionPoints?.ToString() ?? "-")</td>
+                                        <td>
+                                            @if (member.CanKick)
+                                            {
+                                                <form asp-action="KickClanMember" method="post" class="inline-action-form">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="cmid" value="@member.CMID" />
+                                                    <input type="hidden" name="returnClanId" value="@clan.CLID" />
+                                                    <button class="btn btn-outline-danger btn-sm" type="submit">Kick</button>
+                                                </form>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    }
+                </article>
+            }
+            else
+            {
+                <div class="empty-state">No clan membership found for your characters.</div>
+            }
+        </section>
+    </div>
+
+    <aside class="site-card account-security-card">
+        @if (TempData["PasswordSuccess"] != null)
+        {
+            <div class="alert alert-success">@TempData["PasswordSuccess"]</div>
+        }
+
+        @if (TempData["PasswordError"] != null)
+        {
+            <div class="alert alert-danger">@TempData["PasswordError"]</div>
+        }
+
+        <span class="account-card-kicker">Security</span>
+        <h2>Password</h2>
+        <a class="btn btn-danger w-100" asp-action="ChangePassword">Change password</a>
+    </aside>
+</section>

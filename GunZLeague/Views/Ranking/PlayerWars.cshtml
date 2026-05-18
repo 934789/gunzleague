@@ -1,0 +1,152 @@
+@model IEnumerable<GunZLeague.Models.GunZ.PlayerWarStanding>
+@using GunZLeague.Models.GunZ
+@{
+    ViewData["Title"] = "Player Wars";
+    var search = ViewBag.Search as string ?? string.Empty;
+    var currentView = ViewBag.CurrentPlayerWarView as string ?? "top";
+    var currentPage = (int)(ViewBag.CurrentPage ?? 1);
+    var totalPages = (int)(ViewBag.TotalPages ?? 0);
+    var latestPlayerWars = ViewBag.LatestPlayerWars as IEnumerable<PlayerWarMatchSummary> ?? Enumerable.Empty<PlayerWarMatchSummary>();
+}
+
+<section class="page-shell">
+    <div class="page-main">
+        <section class="rank-simple-header">
+            <span class="eyebrow">Ranking</span>
+            <h1>Player Wars</h1>
+            <div class="tabs rank-tabs">
+                <a asp-action="Index">Rank</a>
+                <a asp-action="Player">Player</a>
+                <a asp-action="Clan">Clan</a>
+                <a class="active" asp-action="PlayerWars">Player Wars</a>
+            </div>
+        </section>
+
+        <div class="tabs playerwar-view-tabs">
+            <a class="@(currentView == "top" ? "active" : "")" asp-action="PlayerWars" asp-route-view="top">Top Player Wars</a>
+            <a class="@(currentView == "latest" ? "active" : "")" asp-action="PlayerWars" asp-route-view="latest">Latest Player Wars</a>
+        </div>
+
+        @if (currentView == "latest")
+        {
+            <section class="latest-playerwars">
+                <div class="section-title">
+                    <h2>Latest Player Wars</h2>
+                </div>
+                <div class="playerwar-match-list full-playerwar-list">
+                    @foreach (var war in latestPlayerWars)
+                    {
+                        <article class="playerwar-match-card">
+                            <div class="playerwar-versus">
+                                <div class="playerwar-side">
+                                    <small>Winners</small>
+                                    <div class="playerwar-team winner-team">
+                                        @foreach (var playerName in war.WinnerPlayers)
+                                        {
+                                            <span>@playerName</span>
+                                        }
+                                    </div>
+                                </div>
+                                <b class="playerwar-score">@(string.IsNullOrWhiteSpace(war.RoundScore) ? "VS" : war.RoundScore)</b>
+                                <div class="playerwar-side">
+                                    <small>Losers</small>
+                                    <div class="playerwar-team loser-team">
+                                        @foreach (var playerName in war.LoserPlayers)
+                                        {
+                                            <span>@playerName</span>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="playerwar-match-meta">
+                                <small>Map</small>
+                                <strong>@war.MapName</strong>
+                                <small>Time</small>
+                                <span>@(war.PlayedAt?.ToString("MM/dd/yyyy HH:mm") ?? "-")</span>
+                            </div>
+                        </article>
+                    }
+                    @if (!latestPlayerWars.Any())
+                    {
+                        <div class="empty-state">No recent Player Wars found.</div>
+                    }
+                </div>
+            </section>
+        }
+        else
+        {
+            <div class="rank-toolbar rank-search-toolbar">
+                <form class="rank-search-form" asp-action="PlayerWars" method="get">
+                    <input type="hidden" name="view" value="top" />
+                    <input class="form-control" type="search" name="q" value="@search" maxlength="24" placeholder="Search player" />
+                    <button class="btn btn-danger" type="submit">Search</button>
+                    @if (!string.IsNullOrWhiteSpace(search))
+                    {
+                        <a class="btn btn-outline-light" asp-action="PlayerWars" asp-route-view="top">Clear</a>
+                    }
+                </form>
+            </div>
+
+            <div class="section-title">
+                <h2>Top Player Wars</h2>
+            </div>
+            <div class="table-shell rank-table-shell">
+                <table class="table rank-table align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Player</th>
+                            <th>Points</th>
+                            <th>Wins</th>
+                            <th>Losses</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{
+                            var position = ((currentPage - 1) * 10) + 1;
+                        }
+                        @foreach (var player in Model)
+                        {
+                            var rankClass = position <= 3 ? $"rank-top-{position}" : string.Empty;
+                            <tr>
+                                <td><span class="rank-number @rankClass">@position</span></td>
+                                <td>
+                                    @if (player.CharacterId.HasValue)
+                                    {
+                                        <a class="table-entity-link" asp-action="PlayerDetails" asp-route-id="@player.CharacterId.Value">@player.PlayerName</a>
+                                    }
+                                    else
+                                    {
+                                        <strong>@player.PlayerName</strong>
+                                    }
+                                </td>
+                                <td>@player.Points</td>
+                                <td>@player.Wins</td>
+                                <td>@player.Losses</td>
+                            </tr>
+                            position++;
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            @if (!Model.Any())
+            {
+                <div class="empty-state mt-3">No Player Wars ranking found.</div>
+            }
+        }
+
+        <div class="pager-row">
+            @if (currentPage > 1)
+            {
+                <a class="btn btn-outline-light" asp-action="PlayerWars" asp-route-view="@currentView" asp-route-q="@search" asp-route-page="@(currentPage - 1)">Previous</a>
+            }
+            <span>Page @currentPage of @(Math.Max(totalPages, 1))</span>
+            @if (currentPage < totalPages)
+            {
+                <a class="btn btn-outline-light" asp-action="PlayerWars" asp-route-view="@currentView" asp-route-q="@search" asp-route-page="@(currentPage + 1)">Next</a>
+            }
+        </div>
+    </div>
+    <partial name="_SidePanel" />
+</section>

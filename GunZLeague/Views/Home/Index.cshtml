@@ -1,0 +1,214 @@
+@model IEnumerable<News>
+@using GunZLeague.Models.GunZ
+@using Microsoft.AspNetCore.Http
+@{
+    ViewData["Title"] = "Home";
+    var topPlayers = ViewBag.TopPlayers as IEnumerable<Character> ?? Enumerable.Empty<Character>();
+    var topClans = ViewBag.TopClans as IEnumerable<Clan> ?? Enumerable.Empty<Clan>();
+    var topPlayerWars = ViewBag.TopPlayerWars as IEnumerable<PlayerWarStanding> ?? Enumerable.Empty<PlayerWarStanding>();
+    var latestPlayerWars = ViewBag.LatestPlayerWars as IEnumerable<PlayerWarMatchSummary> ?? Enumerable.Empty<PlayerWarMatchSummary>();
+}
+
+<section class="hero-section">
+    <div class="hero-content">
+        <p class="eyebrow">Competitive server</p>
+        <h1><span>GunZ</span> <strong>League</strong></h1>
+        <p class="lead">Create your account, follow rankings, and jump into the league.</p>
+        <div class="hero-actions">
+            <a class="btn btn-danger btn-lg" asp-controller="Account" asp-action="Register">Create account</a>
+            <a class="btn btn-outline-light btn-lg" asp-controller="Home" asp-action="Download">Download</a>
+        </div>
+    </div>
+</section>
+
+<section class="home-dashboard">
+    <div class="rank-zone">
+        <div class="rank-card">
+            <div class="section-title">
+                <h2>Top characters</h2>
+                <button class="link-button" type="button" data-rank-toggle="players">Show more</button>
+            </div>
+            <div class="table-shell compact-table">
+                <table class="table table-dark table-striped align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Character</th>
+                            <th>Lv</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{
+                            var playerPosition = 1;
+                        }
+                        @foreach (var player in topPlayers)
+                        {
+                            <tr class="@(playerPosition > 5 ? "rank-extra rank-extra-players" : "")">
+                                <td>@playerPosition</td>
+                                <td>
+                                    <a class="table-entity-link" asp-controller="Ranking" asp-action="PlayerDetails" asp-route-id="@player.CID">
+                                        @player.Name
+                                    </a>
+                                </td>
+                                <td>@player.Level</td>
+                            </tr>
+                            playerPosition++;
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="rank-card">
+            <div class="section-title">
+                <h2>Top clans</h2>
+                <button class="link-button" type="button" data-rank-toggle="clans">Show more</button>
+            </div>
+            <div class="table-shell compact-table">
+                <table class="table table-dark table-striped align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Clan</th>
+                            <th>Points</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{
+                            var clanPosition = 1;
+                        }
+                        @foreach (var clan in topClans)
+                        {
+                            <tr class="@(clanPosition > 5 ? "rank-extra rank-extra-clans" : "")">
+                                <td>@clanPosition</td>
+                                <td>
+                                    <a class="table-entity-link" asp-controller="Ranking" asp-action="ClanDetails" asp-route-id="@clan.CLID">
+                                        @clan.Name
+                                    </a>
+                                </td>
+                                <td>@clan.Point</td>
+                            </tr>
+                            clanPosition++;
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="rank-card top-playerwar-card">
+            <div class="section-title">
+                <h2>Top Player Wars</h2>
+                <a class="link-button" asp-controller="Ranking" asp-action="PlayerWars" asp-route-view="top">View all</a>
+            </div>
+            <div class="table-shell compact-table playerwar-rank-table">
+                <table class="table table-dark table-striped align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Player</th>
+                            <th>Points</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{
+                            var warPosition = 1;
+                        }
+                        @foreach (var war in topPlayerWars.Take(5))
+                        {
+                            <tr>
+                                <td>@warPosition</td>
+                                <td>
+                                    @if (war.CharacterId.HasValue)
+                                    {
+                                        <a class="table-entity-link" asp-controller="Ranking" asp-action="PlayerDetails" asp-route-id="@war.CharacterId.Value">@war.PlayerName</a>
+                                    }
+                                    else
+                                    {
+                                        @war.PlayerName
+                                    }
+                                </td>
+                                <td>@war.Points</td>
+                            </tr>
+                            warPosition++;
+                        }
+                        @if (!topPlayerWars.Any())
+                        {
+                            <tr>
+                                <td colspan="3">No Player Wars ranking found.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="rank-card latest-playerwar-card">
+            <div class="section-title">
+                <h2>Latest Player Wars</h2>
+                <a class="link-button" asp-controller="Ranking" asp-action="PlayerWars" asp-route-view="latest">View all</a>
+            </div>
+            <div class="playerwar-match-list compact-playerwar-list">
+                @foreach (var war in latestPlayerWars.Take(4))
+                {
+                    <article class="playerwar-match-card">
+                        <div class="playerwar-versus">
+                            <div class="playerwar-side">
+                                <small>Winners</small>
+                                <div class="playerwar-team winner-team">
+                                    @foreach (var playerName in war.WinnerPlayers)
+                                    {
+                                        <span>@playerName</span>
+                                    }
+                                </div>
+                            </div>
+                            <b class="playerwar-score">@(string.IsNullOrWhiteSpace(war.RoundScore) ? "VS" : war.RoundScore)</b>
+                            <div class="playerwar-side">
+                                <small>Losers</small>
+                                <div class="playerwar-team loser-team">
+                                    @foreach (var playerName in war.LoserPlayers)
+                                    {
+                                        <span>@playerName</span>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                        <div class="playerwar-match-meta">
+                            <small>Map</small>
+                            <strong>@war.MapName</strong>
+                            <small>Time</small>
+                            <span>@(war.PlayedAt?.ToString("MM/dd HH:mm") ?? "-")</span>
+                        </div>
+                    </article>
+                }
+                @if (!latestPlayerWars.Any())
+                {
+                    <div class="compact-empty empty-state">No recent Player Wars found.</div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <partial name="_SidePanel" />
+</section>
+
+<section class="content-grid">
+    <div>
+        <div class="section-title">
+            <h2>News</h2>
+        </div>
+
+        <article class="site-card coming-soon-card">
+            <small>Coming soon</small>
+            <h3>News area under preparation</h3>
+            <p>Server updates, events, and announcements will appear here soon.</p>
+        </article>
+    </div>
+
+    <aside class="site-card quick-panel">
+        <h2>Get started</h2>
+        <a class="quick-link" asp-controller="Account" asp-action="Register">Create account</a>
+        <a class="quick-link" asp-controller="Home" asp-action="Download">Download game</a>
+        <a class="quick-link" asp-controller="Ranking" asp-action="Player">Character ranking</a>
+        <a class="quick-link" asp-controller="Ranking" asp-action="Clan">Clan ranking</a>
+    </aside>
+</section>
