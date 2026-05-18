@@ -1,0 +1,30 @@
+# Build output
+bin/
+obj/
+publish/
+
+# Local/editor files
+.vs/
+.vscode/
+*.user
+*.suo
+*.rsuser
+
+# Logs
+*.log
+dotnet-run*.log
+dotnet-run*.err.log
+
+# Local environment/configuration
+appsettings.Development.json
+DataProtectionKeys/
+
+# Local/generated workspace folders
+.sixth/
+backups/
+deploy/
+
+# OS files
+Thumbs.db
+Desktop.ini
+.DS_Store
